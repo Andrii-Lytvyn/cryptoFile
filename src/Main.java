@@ -1,3 +1,4 @@
+import javax.sound.midi.Soundbank;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -5,22 +6,44 @@ import java.util.Random;
 
 public class Main {
     final static int CRYPTO = 1;
+    final static List<String> list = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
 
         File cryptoFile = new File("src/res/crypto.txt");
-//        List<String> crypto = new ArrayList<>();
-//        crypto.add("hello");
-//        crypto.add("Hello world");
-//        crypto.add("!1");
-        //makeCrypto(crypto);
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-      //addInfoToFile(cryptoFile);
-        makeUnCrypt(cryptoFile);
+
+        while (true) {
+            System.out.println("1: Прочитать файл");
+            System.out.println("2: Расшифровка файла");
+            System.out.println("3: Добавление информации");
+            System.out.println("0: Выход");
+            System.out.print("Введите действие: ");
+            int choose = Integer.parseInt(br.readLine());
+            switch (choose) {
+                case 1:
+                    readCrypted(cryptoFile);
+                    break;
+                case 2:
+                    makeUnCrypt(cryptoFile);
+                    break;
+                case 3:
+                    addInfoToFile(cryptoFile);
+                    break;
+                case 0:
+                    System.exit(0);
+
+
+            }
+
+        }
+
     }
 
     /**
      * Перезаписывает лист по-символьно сдвигая ASCII код на количество CRYPTO вправо
+     *
      * @param list передаем лист для шифрования
      */
     private static void makeCrypto(List<String> list) {
@@ -41,17 +64,22 @@ public class Main {
      * Добавляет записи с экрана в файл. Надо разбить на 2 метода.
      * Вызывает метод makeCrypto для шифрования.
      * Вызывает метод makeOutputFile для записи в файл.
+     *
      * @throws IOException может выбрасывать.
      */
-    private static void addInfoToFile() throws IOException {
+    private static void addInfoToFile(File cryptoFile) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        List<String> list = new ArrayList<>();
+        list.clear();
+        System.out.println("Сейчас в файле: ");
+        makeUnCrypt(cryptoFile);
+        addInfoFromFiletoList(cryptoFile);
+
         int counter = 1;
-        System.out.println("Нажмите '1' для выхода");
+        System.out.println("Нажмите 'q' для выхода");
         while (true) {
             System.out.print("Введите запись №" + counter + ": ");
             String line = br.readLine();
-            if (!line.equals("1")) {
+            if (!line.equalsIgnoreCase("q")) {
                 list.add(line);
                 counter++;
             } else
@@ -62,28 +90,67 @@ public class Main {
         makeOutputFile(list);
     }
 
-    /**Метод по расшифровке файл и выводит значение на экран
-     *
-     * @param tasksFile - Файл для расшифровки
-     * @throws IOException выбрасывает
-     */
-    public static void makeUnCrypt(File tasksFile) throws IOException {
-        BufferedReader inputFileReader = new BufferedReader(new FileReader(tasksFile));
+    private static void addInfoFromFiletoList(File cryptoFile) throws IOException {
+        list.clear();
+        BufferedReader inputFileReader = new BufferedReader(new FileReader(cryptoFile));
         for (String row = inputFileReader.readLine(); row != null; row = inputFileReader.readLine()) {
-            //System.out.println(row);
             StringBuilder tempString = new StringBuilder();
             for (int i = 0; i < row.length(); i++) {
                 int code = (int) row.charAt(i) - CRYPTO;
-               tempString.append((char) code);
+                tempString.append((char) code);
             }
-            System.out.println(tempString);
+            list.add(tempString.toString());
+            // inputFileReader.close();
+            // makeOutputFile(list);
         }
-        inputFileReader.close();
     }
 
+    /**
+     * Метод по расшифровке файл и выводит значение на экран
+     *
+     * @param cryptoFile - Файл для расшифровки
+     * @throws IOException выбрасывает
+     */
+    public static void makeUnCrypt(File cryptoFile) throws IOException {
+        BufferedReader inputFileReader = new BufferedReader(new FileReader(cryptoFile));
+        if (cryptoFile.length() == 0) {
+            System.out.println("Файл пуст");
+        } else {
+            System.out.println("Расшифрованные записи: \n");
+            for (String row = inputFileReader.readLine(); row != null; row = inputFileReader.readLine()) {
+                //System.out.println(row);
+                StringBuilder tempString = new StringBuilder();
+                for (int i = 0; i < row.length(); i++) {
+                    int code = (int) row.charAt(i) - CRYPTO;
+                    tempString.append((char) code);
+                }
+                System.out.println(tempString);
+                // list.add(tempString.toString());
+
+            }
+            //   list.forEach(System.out::println);
+            System.out.println();
+            inputFileReader.close();
+        }
+    }
+
+    public static void readCrypted(File cryptoFile) throws IOException {
+        if (cryptoFile.length() == 0) {
+            System.out.println("Файл пуст");
+        } else {
+            System.out.println("Зашифрованные записи: \n");
+            BufferedReader inputFileReader = new BufferedReader(new FileReader(cryptoFile));
+            for (String row = inputFileReader.readLine(); row != null; row = inputFileReader.readLine()) {
+                System.out.println(row);
+            }
+            System.out.println();
+            inputFileReader.close();
+        }
+    }
 
     /**
      * Создает выходной файл, создает его заново
+     *
      * @param list передаем лист
      * @throws IOException выбрасывает
      */
